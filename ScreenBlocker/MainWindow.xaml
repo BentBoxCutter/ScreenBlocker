@@ -41,10 +41,13 @@
                       IsCheckable="True" />
             <MenuItem Header="New Window"
                       Click="newWindow_OnClick"
-                      IsCheckable="True" />
+                      IsCheckable="False" />
             <MenuItem Header="Close Window"
                       Click="closeWindow_OnClick"
-                      IsCheckable="True" />
+                      IsCheckable="False" />
+            <MenuItem Header="Close All Windows"
+                      Click="closeAllWindows_OnClick"
+                      IsCheckable="False" />
         </ContextMenu>
     </Window.ContextMenu>
     <!--This Rectangle exists as otherwise calls to GetWindow will fail as the window is empty and for some archaic 

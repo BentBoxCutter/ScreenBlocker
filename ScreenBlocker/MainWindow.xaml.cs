@@ -77,5 +77,35 @@ namespace ScreenBlocker
             Process.GetCurrentProcess().Kill();
         }
 
+        private void closeAllWindows_OnClick(object sender, RoutedEventArgs e)
+        {
+            System.Diagnostics.Process[] procs = null;
+
+            try
+            {
+                procs = Process.GetProcessesByName("ScreenBlocker");
+               
+                foreach (Process proc in procs)
+                {
+                    //Kill the process if it is not the current process
+                    if (proc.Id != Process.GetCurrentProcess().Id)
+                    {
+                        proc.Kill();
+                    }
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString()); 
+            }
+            finally
+            {
+
+            }
+            //Finally kill the current process
+            Process.GetCurrentProcess().Kill();
+        }
+
     }
 }
