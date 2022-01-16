@@ -39,6 +39,9 @@
                       Click="Fullscreen_OnClick"
                       CommandParameter="{Binding RelativeSource={RelativeSource Self}, Path=Parent}"
                       IsCheckable="True" />
+            <MenuItem Header="New Window"
+                      Click="newWindow_OnClick"
+                      IsCheckable="True" />
         </ContextMenu>
     </Window.ContextMenu>
     <!--This Rectangle exists as otherwise calls to GetWindow will fail as the window is empty and for some archaic 

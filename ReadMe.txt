@@ -8,6 +8,7 @@ The following features are supported:
  - Resize the window from the bottom right corner
  - Change whether the window will display over top of other windows via the right click menu
  - Change whether the window is fullscreen via the right click menu
+ - Open a new instance of the screen blocker via the right click menu
  
  
  

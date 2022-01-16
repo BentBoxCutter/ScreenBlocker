@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -63,6 +64,12 @@ namespace ScreenBlocker
             _forceOnTop = !_forceOnTop;
             _mainWindow.Topmost = _forceOnTop;
             _onTopMenuItem.IsChecked = this._forceOnTop;
+        }
+
+        private void newWindow_OnClick(object sender, RoutedEventArgs e)
+        {
+            var screenBlockPath = Process.GetCurrentProcess().MainModule.FileName;
+            Process.Start(screenBlockPath);
         }
 
     }
