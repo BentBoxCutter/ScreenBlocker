@@ -72,5 +72,10 @@ namespace ScreenBlocker
             Process.Start(screenBlockPath);
         }
 
+        private void closeWindow_OnClick(object sender, RoutedEventArgs e)
+        {
+            Process.GetCurrentProcess().Kill();
+        }
+
     }
 }
