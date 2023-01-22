@@ -8,6 +8,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Documents;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -23,20 +24,47 @@ namespace ScreenBlocker
     {
         private bool _fullscreen = false;
         private bool _forceOnTop = true;
-        private MenuItem _fullscreenMenuItem;
-        private MenuItem _onTopMenuItem;
+        private System.Windows.Controls.MenuItem _fullscreenMenuItem;
+        private System.Windows.Controls.MenuItem _onTopMenuItem;
         private MainWindow _mainWindow;
+
         public MainWindow()
         {
+            
             InitializeComponent();
             //Setup the local pointers for easy access later
             _mainWindow = GetWindow(this) as MainWindow;
-            _onTopMenuItem = _mainWindow.ContextMenu.Items[0] as MenuItem;
-            _fullscreenMenuItem = this.ContextMenu.Items[1] as MenuItem;
+            _onTopMenuItem = _mainWindow.ContextMenu.Items[0] as System.Windows.Controls.MenuItem;
+            _fullscreenMenuItem = this.ContextMenu.Items[1] as System.Windows.Controls.MenuItem;
 
             //Setup the default states
             _onTopMenuItem.IsChecked = this._forceOnTop;
             _fullscreenMenuItem.IsChecked = this._fullscreen;
+
+            //Start window hidden
+            _mainWindow.Visibility = System.Windows.Visibility.Hidden;
+            _mainWindow.WindowStartupLocation = WindowStartupLocation.Manual;
+
+            //Open the snipping form passing in our event handler
+            SnippingTool.SnipForCoords(this.Snipper_AreaSelected);
+        }
+
+
+        private void Snipper_AreaSelected(object sender, EventArgs e)
+        {
+            _mainWindow.Visibility = Visibility.Visible;
+            _mainWindow.Height = SnippingTool.SnippedPos.Height;
+            _mainWindow.Width = SnippingTool.SnippedPos.Width;
+            _mainWindow.Left = SnippingTool.SnippedPos.Left;
+            _mainWindow.Top = SnippingTool.SnippedPos.Top;
+            
+            _mainWindow.Visibility = Visibility.Visible;
+        }
+
+        private void reSnip_OnClick(object sender, RoutedEventArgs e)
+        {
+            _mainWindow.Visibility = System.Windows.Visibility.Hidden;
+            SnippingTool.SnipForCoords(this.Snipper_AreaSelected);
         }
 
         private void Window_Deactivated(object sender, EventArgs e)
