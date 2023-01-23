@@ -136,7 +136,47 @@ namespace ScreenBlocker
             var hScale = Image.Width / (double)Width;
             var vScale = Image.Height / (double)Height;
 
-            SnippedPos = new Rectangle((int)(_rectSelection.X * hScale) + this.Location.X, (int)(_rectSelection.Y * vScale) + this.Location.Y, (int)(_rectSelection.Width * hScale), (int)(_rectSelection.Height * vScale));
+            int X = (int)(_rectSelection.X * hScale) + this.Location.X;
+            int Y = (int)(_rectSelection.Y * vScale) + this.Location.Y;
+            int width = (int)(_rectSelection.Width * hScale);
+            int height = (int)(_rectSelection.Height * vScale);
+
+            int pixelSnapLimit = 20;
+
+            //Snap to Left 
+            if (X % Width < pixelSnapLimit)
+            {
+                //Add the extra width
+                width += X % Width;
+                //Take it to the edge of the screen
+                X = (X / Width) * Width;
+            }
+
+            //Snap to Top
+            if (Y % Height < pixelSnapLimit)
+            {
+                //Add the extra height
+                height += Y % Height;
+                //Take it to the edge of the screen
+                Y = (Y / Height) * Height;
+            }
+
+            //Snap to Right
+            if((X % Width) + width + pixelSnapLimit >= Width)
+            {
+                //Add the extra width
+                width += Width - (X % Width) - width;
+            }
+
+            //Snap to Bottom
+            if ((Y % Height) + height + pixelSnapLimit >= Height)
+            {
+                //Add the extra width
+                height += Height - (Y % Height) - height;
+            }
+
+            SnippedPos = new Rectangle(X, Y, width, height);
+
             CloseForms();
             OnAreaSelected(new EventArgs());
             AreaSelectedInstance.Invoke(this,new EventArgs());

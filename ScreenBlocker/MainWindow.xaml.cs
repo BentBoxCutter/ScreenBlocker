@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.Win32;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -27,6 +28,7 @@ namespace ScreenBlocker
         private System.Windows.Controls.MenuItem _fullscreenMenuItem;
         private System.Windows.Controls.MenuItem _onTopMenuItem;
         private MainWindow _mainWindow;
+        private double _x_offset = 0;
 
         public MainWindow()
         {
@@ -41,6 +43,9 @@ namespace ScreenBlocker
             _onTopMenuItem.IsChecked = this._forceOnTop;
             _fullscreenMenuItem.IsChecked = this._fullscreen;
 
+            //Add event handler for sleep and wake so we can properly handle returning to the correct monitor
+            SystemEvents.PowerModeChanged += OnPowerChange;
+
             //Start window hidden
             _mainWindow.Visibility = System.Windows.Visibility.Hidden;
             _mainWindow.WindowStartupLocation = WindowStartupLocation.Manual;
@@ -49,6 +54,21 @@ namespace ScreenBlocker
             SnippingTool.SnipForCoords(this.Snipper_AreaSelected);
         }
 
+        private void OnPowerChange(object s, PowerModeChangedEventArgs e)
+        {
+            switch (e.Mode)
+            {
+                case PowerModes.Resume:
+                    //Give it 3 seconds to recognize the monitors
+                    System.Threading.Thread.Sleep(3000);
+                    _mainWindow.Left = _x_offset;
+                    break;
+                case PowerModes.Suspend:
+                    //var screen = System.Windows.Forms.Screen.FromHandle(new System.Windows.Interop.WindowInteropHelper(GetWindow(this)).Handle);
+                    _x_offset = _mainWindow.Left;
+                    break;
+            }
+        }
 
         private void Snipper_AreaSelected(object sender, EventArgs e)
         {
