@@ -1,20 +1,8 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Forms;
 using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace ScreenBlocker
 {
@@ -23,17 +11,54 @@ namespace ScreenBlocker
     /// </summary>
     public partial class MainWindow : Window
     {
+        #region Properties
+        /// <summary>
+        /// Tracks if the UI should be fullscreen
+        /// </summary>
         private bool _fullscreen = false;
-        private bool _forceOnTop = true;
+
+        /// <summary>
+        /// Tracks if the window should force itself on top of other windows
+        /// </summary>
+        private bool _forceOnTop = false;
+
+        /// <summary>
+        /// Reference to the fullscreen menu item
+        /// </summary>
         private System.Windows.Controls.MenuItem _fullscreenMenuItem;
+
+        /// <summary>
+        /// Reference to the on top menu item
+        /// </summary>
         private System.Windows.Controls.MenuItem _onTopMenuItem;
+
+        //eference to the main window
         private MainWindow _mainWindow;
+
+        /// <summary>
+        /// Used to save which monitor the window is on on shutdown so we can restore later
+        /// </summary>
         private double _x_offset = 0;
 
+        /// <summary>
+        /// The horizontal scale of the monitor
+        /// </summary>
+        double xScale = 1.0;
+
+        /// <summary>
+        /// The vertical scale of the monitor
+        /// </summary>
+        double yScale = 1.0;
+
+        #endregion Properties
+
+        /// <summary>
+        /// Constructor for the main window.  
+        /// </summary>
         public MainWindow()
         {
-            
             InitializeComponent();
+
             //Setup the local pointers for easy access later
             _mainWindow = GetWindow(this) as MainWindow;
             _onTopMenuItem = _mainWindow.ContextMenu.Items[0] as System.Windows.Controls.MenuItem;
@@ -46,6 +71,9 @@ namespace ScreenBlocker
             //Add event handler for sleep and wake so we can properly handle returning to the correct monitor
             SystemEvents.PowerModeChanged += OnPowerChange;
 
+            //Add window loaded event handler
+            Loaded += MainWindow_Loaded;
+
             //Start window hidden
             _mainWindow.Visibility = System.Windows.Visibility.Hidden;
             _mainWindow.WindowStartupLocation = WindowStartupLocation.Manual;
@@ -54,6 +82,69 @@ namespace ScreenBlocker
             SnippingTool.SnipForCoords(this.Snipper_AreaSelected);
         }
 
+
+        #region Event Handlers
+
+        /// <summary>
+        /// Callback for when the Snipper completes selecting an area
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Snipper_AreaSelected(object sender, EventArgs e)
+        {
+            _mainWindow.Visibility = Visibility.Visible;
+            _mainWindow.Height = SnippingTool.SnippedPos.Height / yScale;
+            _mainWindow.Width = SnippingTool.SnippedPos.Width / xScale;
+            _mainWindow.Left = SnippingTool.SnippedPos.Left / xScale;
+            _mainWindow.Top = SnippingTool.SnippedPos.Top / yScale;
+
+            _mainWindow.Visibility = Visibility.Visible;
+        }
+
+        /// <summary>
+        /// Handler for when the window loads.  This scales the rectangle.
+        /// The reason we do this here rather than in <see cref="Snipper_AreaSelected(object, EventArgs)"/>
+        /// is because the UI is not rendered yet then which throws an exception
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            xScale = PresentationSource.FromVisual(_mainWindow).CompositionTarget.TransformToDevice.M11;
+            yScale = PresentationSource.FromVisual(_mainWindow).CompositionTarget.TransformToDevice.M22;
+
+            _mainWindow.Height = SnippingTool.SnippedPos.Height / yScale;
+            _mainWindow.Width = SnippingTool.SnippedPos.Width / xScale;
+            _mainWindow.Left = SnippingTool.SnippedPos.Left / xScale;
+            _mainWindow.Top = SnippingTool.SnippedPos.Top / yScale;
+        }
+
+        /// <summary>
+        /// Mouse down handler to enable dragging the window around
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.ChangedButton == MouseButton.Left)
+                this.DragMove();
+        }
+
+        private void Window_Deactivated(object sender, EventArgs e)
+        {
+            var window = (Window)sender;
+            window.Topmost = true;
+        }
+
+        #endregion Event Handlers
+
+        #region Power Handler
+
+        /// <summary>
+        /// Power change event handler to help restore the proper window position on the correct monitor
+        /// </summary>
+        /// <param name="s"></param>
+        /// <param name="e"></param>
         private void OnPowerChange(object s, PowerModeChangedEventArgs e)
         {
             switch (e.Mode)
@@ -70,35 +161,31 @@ namespace ScreenBlocker
             }
         }
 
-        private void Snipper_AreaSelected(object sender, EventArgs e)
-        {
-            _mainWindow.Visibility = Visibility.Visible;
-            _mainWindow.Height = SnippingTool.SnippedPos.Height;
-            _mainWindow.Width = SnippingTool.SnippedPos.Width;
-            _mainWindow.Left = SnippingTool.SnippedPos.Left;
-            _mainWindow.Top = SnippingTool.SnippedPos.Top;
-            
-            _mainWindow.Visibility = Visibility.Visible;
-        }
+        #endregion Power Handler
 
+
+        #region Menu Handlers
+
+        /// <summary>
+        /// Handler for when the resnip button is pressed.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void reSnip_OnClick(object sender, RoutedEventArgs e)
         {
             _mainWindow.Visibility = System.Windows.Visibility.Hidden;
             SnippingTool.SnipForCoords(this.Snipper_AreaSelected);
+
+            //Invalidate the UI so it redraws so the on load handler fires to adjust scale
+            InvalidateVisual();
         }
 
-        private void Window_Deactivated(object sender, EventArgs e)
-        {
-            var window = (Window)sender;
-            window.Topmost = true;
-        }
 
-        private void Window_MouseDown(object sender, MouseButtonEventArgs e)
-        {
-            if (e.ChangedButton == MouseButton.Left)
-                this.DragMove();
-        }
-        
+        /// <summary>
+        /// Handler for the fullscreen button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void Fullscreen_OnClick(object sender, RoutedEventArgs e)
         {
             _mainWindow.WindowState = _fullscreen ? WindowState.Normal : WindowState.Maximized;
@@ -107,6 +194,11 @@ namespace ScreenBlocker
             _fullscreenMenuItem.IsChecked = this._fullscreen;
         }
 
+        /// <summary>
+        /// Handler for the force on top button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void onTop_OnClick(object sender, RoutedEventArgs e)
         {
             _forceOnTop = !_forceOnTop;
@@ -114,17 +206,32 @@ namespace ScreenBlocker
             _onTopMenuItem.IsChecked = this._forceOnTop;
         }
 
+        /// <summary>
+        /// Handler for the new window button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void newWindow_OnClick(object sender, RoutedEventArgs e)
         {
             var screenBlockPath = Process.GetCurrentProcess().MainModule.FileName;
             Process.Start(screenBlockPath);
         }
 
+        /// <summary>
+        /// Handler for the close window button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void closeWindow_OnClick(object sender, RoutedEventArgs e)
         {
             Process.GetCurrentProcess().Kill();
         }
 
+        /// <summary>
+        /// Handler for the close all windows button
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void closeAllWindows_OnClick(object sender, RoutedEventArgs e)
         {
             System.Diagnostics.Process[] procs = null;
@@ -132,7 +239,7 @@ namespace ScreenBlocker
             try
             {
                 procs = Process.GetProcessesByName("ScreenBlocker");
-               
+
                 foreach (Process proc in procs)
                 {
                     //Kill the process if it is not the current process
@@ -141,11 +248,11 @@ namespace ScreenBlocker
                         proc.Kill();
                     }
                 }
-                
+
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString()); 
+                Console.WriteLine(ex.ToString());
             }
             finally
             {
@@ -155,5 +262,7 @@ namespace ScreenBlocker
             Process.GetCurrentProcess().Kill();
         }
 
-    }
+
+        #endregion Button Handlers
+    }     
 }

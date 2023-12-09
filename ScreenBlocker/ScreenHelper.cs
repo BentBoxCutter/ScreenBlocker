@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ScreenBlocker
 {
+    /// <summary>
+    /// Represents a monitor
+    /// </summary>
     public class DeviceInfo
     {
         public string DeviceName { get; set; }
@@ -15,9 +15,15 @@ namespace ScreenBlocker
         public int HorizontalResolution { get; set; }
         public Rectangle MonitorArea { get; set; }
     }
+
+    /// <summary>
+    /// Helper class for screen operations
+    /// </summary>
     public static class ScreenHelper
     {
+
         private const int DektopVertRes = 117;
+
         private const int DesktopHorzRes = 118;
         [StructLayout(LayoutKind.Sequential)]
         internal struct Rect

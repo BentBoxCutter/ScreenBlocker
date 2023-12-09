@@ -1,10 +1,14 @@
 ﻿using System;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Windows;
 using System.Windows.Forms;
 
 namespace ScreenBlocker
 {
+    /// <summary>
+    /// Snipping tool to select area to block
+    /// </summary>
     public sealed partial class SnippingTool : Form
     {
         public static event EventHandler Cancel;
@@ -15,7 +19,7 @@ namespace ScreenBlocker
 
         private static SnippingTool[] _forms;
         private Rectangle _rectSelection;
-        private Point _pointStart;
+        private System.Drawing.Point _pointStart;
 
         public SnippingTool(Image bmp, int x, int y, int width, int height)
         {
@@ -45,6 +49,9 @@ namespace ScreenBlocker
             AreaSelected?.Invoke(this, e);
         }
 
+        /// <summary>
+        /// Closes all of the open forms (one per monitor)
+        /// </summary>
         private void CloseForms()
         {
             for (int i = 0; i < _forms.Length; i++)
@@ -103,7 +110,7 @@ namespace ScreenBlocker
                 return;
             }
             _pointStart = e.Location;
-            _rectSelection = new Rectangle(e.Location, new Size(0, 0));
+            _rectSelection = new Rectangle(e.Location, new System.Drawing.Size(0, 0));
             Invalidate();
         }
 
@@ -133,49 +140,62 @@ namespace ScreenBlocker
             }
 
 
+
+            //TODO: Migrate all of this into a helper class
+
+
             var hScale = Image.Width / (double)Width;
             var vScale = Image.Height / (double)Height;
 
-            int X = (int)(_rectSelection.X * hScale) + this.Location.X;
-            int Y = (int)(_rectSelection.Y * vScale) + this.Location.Y;
+            //Where the rectangle is on the current monitor
+            int monitor_X = (int)(_rectSelection.X * hScale);
+            int monitor_Y = (int)(_rectSelection.Y * vScale);
+
+
             int width = (int)(_rectSelection.Width * hScale);
             int height = (int)(_rectSelection.Height * vScale);
 
             int pixelSnapLimit = 20;
 
             //Snap to Left 
-            if (X % Width < pixelSnapLimit)
+            if (monitor_X < pixelSnapLimit)
             {
                 //Add the extra width
-                width += X % Width;
+                width += monitor_X;
                 //Take it to the edge of the screen
-                X = (X / Width) * Width;
+                monitor_X = 0;
             }
 
             //Snap to Top
-            if (Y % Height < pixelSnapLimit)
+            if (monitor_Y < pixelSnapLimit)
             {
                 //Add the extra height
-                height += Y % Height;
+                height += monitor_Y;
                 //Take it to the edge of the screen
-                Y = (Y / Height) * Height;
+                monitor_Y = 0;
             }
 
             //Snap to Right
-            if((X % Width) + width + pixelSnapLimit >= Width)
+            if(monitor_X + width + pixelSnapLimit >= Width)
             {
                 //Add the extra width
-                width += Width - (X % Width) - width;
+                width = Width - monitor_X;
             }
 
             //Snap to Bottom
-            if ((Y % Height) + height + pixelSnapLimit >= Height)
+            if (monitor_Y + pixelSnapLimit >= Height)
             {
                 //Add the extra width
-                height += Height - (Y % Height) - height;
+                height = Height - monitor_Y;
             }
 
-            SnippedPos = new Rectangle(X, Y, width, height);
+
+            //Calculate where the rectangle is across all monitors
+            int absolute_X = monitor_X + this.Location.X;
+            int absolute_Y = monitor_Y + this.Location.Y;
+
+
+            SnippedPos = new Rectangle(absolute_X, absolute_Y, width, height);
 
             CloseForms();
             OnAreaSelected(new EventArgs());
