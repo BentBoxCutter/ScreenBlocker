@@ -155,7 +155,7 @@ namespace ScreenBlocker
             int width = (int)(_rectSelection.Width * hScale);
             int height = (int)(_rectSelection.Height * vScale);
 
-            int pixelSnapLimit = 20;
+            int pixelSnapLimit = 30;
 
             //Snap to Left 
             if (monitor_X < pixelSnapLimit)

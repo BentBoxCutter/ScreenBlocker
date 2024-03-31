@@ -20,7 +20,7 @@ namespace ScreenBlocker
         /// <summary>
         /// Tracks if the window should force itself on top of other windows
         /// </summary>
-        private bool _forceOnTop = false;
+        private bool _forceOnTop = true;
 
         /// <summary>
         /// Reference to the fullscreen menu item
@@ -49,6 +49,11 @@ namespace ScreenBlocker
         /// The vertical scale of the monitor
         /// </summary>
         double yScale = 1.0;
+
+        /// <summary>
+        /// Use for the border when hovering
+        /// </summary>
+        double hoverBoderThickness = 3.0;
 
         #endregion Properties
 
@@ -134,6 +139,27 @@ namespace ScreenBlocker
         {
             var window = (Window)sender;
             window.Topmost = true;
+        }
+
+        /// <summary>
+        /// When the user's mouse enters the window highlight the border
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Window_MouseEnter(object sender, EventArgs e)
+        {
+            this.BorderThickness = new Thickness(hoverBoderThickness);
+        }
+
+        /// <summary>
+        /// When the user's mouse enters the window remove highlight on the border
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Window_MouseLeave(object sender, EventArgs e)
+        {
+            this.BorderThickness = new Thickness(0.0);
+
         }
 
         #endregion Event Handlers

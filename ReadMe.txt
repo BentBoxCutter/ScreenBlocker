@@ -14,6 +14,9 @@ Features
  - Change whether the window is fullscreen via the right click menu
  - Open a new instance of the screen blocker via the right click menu
  - Close the window via the right click menu
+ - Close all instances of the program via the right click menu
+ - Snaps to the edge of the screen when snipped near the edges
+ - Highlight borders on hover
  
  
  Future Ideas:
