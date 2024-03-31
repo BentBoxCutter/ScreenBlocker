@@ -183,7 +183,7 @@ namespace ScreenBlocker
             }
 
             //Snap to Bottom
-            if (monitor_Y + pixelSnapLimit >= Height)
+            if (monitor_Y + height + pixelSnapLimit >= Height)
             {
                 //Add the extra width
                 height = Height - monitor_Y;
