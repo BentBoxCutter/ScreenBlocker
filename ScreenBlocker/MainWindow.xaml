@@ -37,7 +37,7 @@
     <Window.ContextMenu>
         <ContextMenu x:Name="contextMenu" StaysOpen="True" IsEnabled="True">
             <MenuItem Header="Force On Top"
-                      Click="onTop_OnClick"
+                      Click="OnTop_OnClick"
                       IsCheckable="True" />
             <MenuItem Header="Fullscreen"
                       Click="Fullscreen_OnClick"
@@ -53,7 +53,7 @@
                       Click="closeAllWindows_OnClick"
                       IsCheckable="False" />
             <MenuItem Header="ReSnip"
-                      Click="reSnip_OnClick"
+                      Click="ReSnip_OnClick"
                       IsCheckable="False" />
         </ContextMenu>
     </Window.ContextMenu>

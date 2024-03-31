@@ -25,15 +25,15 @@ namespace ScreenBlocker
         /// <summary>
         /// Reference to the fullscreen menu item
         /// </summary>
-        private System.Windows.Controls.MenuItem _fullscreenMenuItem;
+        private readonly System.Windows.Controls.MenuItem _fullscreenMenuItem;
 
         /// <summary>
         /// Reference to the on top menu item
         /// </summary>
-        private System.Windows.Controls.MenuItem _onTopMenuItem;
+        private readonly System.Windows.Controls.MenuItem _onTopMenuItem;
 
         //eference to the main window
-        private MainWindow _mainWindow;
+        private readonly MainWindow _mainWindow;
 
         /// <summary>
         /// Used to save which monitor the window is on on shutdown so we can restore later
@@ -53,7 +53,7 @@ namespace ScreenBlocker
         /// <summary>
         /// Use for the border when hovering
         /// </summary>
-        double hoverBoderThickness = 3.0;
+        readonly double hoverBoderThickness = 3.0;
 
         #endregion Properties
 
@@ -133,6 +133,8 @@ namespace ScreenBlocker
         {
             if (e.ChangedButton == MouseButton.Left)
                 this.DragMove();
+            else if(e.ChangedButton == MouseButton.Middle)
+                SetForceOnTop(!_forceOnTop);
         }
 
         private void Window_Deactivated(object sender, EventArgs e)
@@ -159,7 +161,6 @@ namespace ScreenBlocker
         private void Window_MouseLeave(object sender, EventArgs e)
         {
             this.BorderThickness = new Thickness(0.0);
-
         }
 
         #endregion Event Handlers
@@ -197,7 +198,7 @@ namespace ScreenBlocker
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void reSnip_OnClick(object sender, RoutedEventArgs e)
+        private void ReSnip_OnClick(object sender, RoutedEventArgs e)
         {
             _mainWindow.Visibility = System.Windows.Visibility.Hidden;
             SnippingTool.SnipForCoords(this.Snipper_AreaSelected);
@@ -214,10 +215,7 @@ namespace ScreenBlocker
         /// <param name="e"></param>
         private void Fullscreen_OnClick(object sender, RoutedEventArgs e)
         {
-            _mainWindow.WindowState = _fullscreen ? WindowState.Normal : WindowState.Maximized;
-
-            _fullscreen = !_fullscreen;
-            _fullscreenMenuItem.IsChecked = this._fullscreen;
+            SetFullscreen(!_fullscreen);
         }
 
         /// <summary>
@@ -225,11 +223,9 @@ namespace ScreenBlocker
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void onTop_OnClick(object sender, RoutedEventArgs e)
+        private void OnTop_OnClick(object sender, RoutedEventArgs e)
         {
-            _forceOnTop = !_forceOnTop;
-            _mainWindow.Topmost = _forceOnTop;
-            _onTopMenuItem.IsChecked = this._forceOnTop;
+            SetForceOnTop(!_forceOnTop);
         }
 
         /// <summary>
@@ -237,7 +233,7 @@ namespace ScreenBlocker
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void newWindow_OnClick(object sender, RoutedEventArgs e)
+        private void NewWindow_OnClick(object sender, RoutedEventArgs e)
         {
             var screenBlockPath = Process.GetCurrentProcess().MainModule.FileName;
             Process.Start(screenBlockPath);
@@ -248,7 +244,7 @@ namespace ScreenBlocker
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void closeWindow_OnClick(object sender, RoutedEventArgs e)
+        private void CloseWindow_OnClick(object sender, RoutedEventArgs e)
         {
             Process.GetCurrentProcess().Kill();
         }
@@ -258,7 +254,7 @@ namespace ScreenBlocker
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void closeAllWindows_OnClick(object sender, RoutedEventArgs e)
+        private void CloseAllWindows_OnClick(object sender, RoutedEventArgs e)
         {
             System.Diagnostics.Process[] procs = null;
 
@@ -290,5 +286,31 @@ namespace ScreenBlocker
 
 
         #endregion Button Handlers
-    }     
+
+        #region Helpers
+
+        /// <summary>
+        /// Sets the force on top value and updates the UI and other required elements
+        /// </summary>
+        /// <param name="state">Desired state for <see cref="_forceOnTop"/></param>
+        private void SetForceOnTop(bool state)
+        {
+            _forceOnTop = state;
+            _mainWindow.Topmost = _forceOnTop;
+            _onTopMenuItem.IsChecked = this._forceOnTop;
+        }
+
+        /// <summary>
+        /// Sets the fullscreen value and updates the UI and other required elements
+        /// </summary>
+        /// <param name="state">Desired state for <see cref="_fullscreen"/></param>
+        private void SetFullscreen(bool state)
+        {
+            _fullscreen = state;
+            _mainWindow.WindowState = _fullscreen ? WindowState.Maximized : WindowState.Normal;
+            _fullscreenMenuItem.IsChecked = this._fullscreen;
+        }
+
+        #endregion Helpers
+    }
 }
